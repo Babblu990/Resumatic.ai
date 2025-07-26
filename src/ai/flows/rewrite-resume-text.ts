@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'rewriteResumeTextPrompt',
   input: {schema: RewriteResumeTextInputSchema},
   output: {schema: RewriteResumeTextOutputSchema},
-  prompt: `You are a world-class copywriter with a knack for making professional experience sound compelling and results-oriented. Rewrite the provided resume section to be more dynamic and impactful, aligning it perfectly with the target job description. Use strong action verbs and quantify achievements where possible.
+  prompt: `You are a world-class copywriter with a knack for making skills and project experience sound compelling and results-oriented, especially for students and recent graduates. Rewrite the provided resume section to be more dynamic and impactful, aligning it perfectly with the target job description. Use strong action verbs and quantify achievements where possible.
 
 Job Description:
 {{{jobDescription}}}

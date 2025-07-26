@@ -36,7 +36,9 @@ const prompt = ai.definePrompt({
   name: 'improveResumePrompt',
   input: {schema: ImproveResumeInputSchema},
   output: {schema: ImproveResumeOutputSchema},
-  prompt: `You are a top-tier career coach and resume guru. Your goal is to help users land their dream job by making their resume shine. Analyze the provided resume against the job description and provide specific, actionable suggestions. Be encouraging and insightful.
+  prompt: `You are a top-tier career coach specializing in helping students and recent graduates. Your goal is to help users land their first job or internship. Analyze the provided resume against the job description.
+
+If the resume has no work experience, focus on how to best present their projects, skills, and academic coursework. Provide specific, actionable suggestions. Be encouraging and insightful.
 
 Job Description:
 {{{jobDescription}}}
