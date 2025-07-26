@@ -23,7 +23,7 @@ const ImproveResumeOutputSchema = z.object({
   suggestions: z
     .string()
     .describe(
-      'Specific, actionable suggestions on how to improve the resume to better match the job description.'
+      'Specific, actionable suggestions on how to improve the resume to better match the job description. Use markdown for formatting, like using headings for sections and bullet points for suggestions.'
     ),
 });
 export type ImproveResumeOutput = z.infer<typeof ImproveResumeOutputSchema>;
@@ -36,11 +36,13 @@ const prompt = ai.definePrompt({
   name: 'improveResumePrompt',
   input: {schema: ImproveResumeInputSchema},
   output: {schema: ImproveResumeOutputSchema},
-  prompt: `You are a resume expert. Analyze the provided resume against the job description and provide specific, actionable suggestions on how to improve the resume to better match the job description. Focus on tailoring the resume to highlight the skills and experiences that are most relevant to the job description.
+  prompt: `You are a top-tier career coach and resume guru. Your goal is to help users land their dream job by making their resume shine. Analyze the provided resume against the job description and provide specific, actionable suggestions. Be encouraging and insightful.
 
-Job Description: {{{jobDescription}}}
+Job Description:
+{{{jobDescription}}}
 
-Resume: {{{resume}}}
+Resume:
+{{{resume}}}
 
 Suggestions:`,
 });

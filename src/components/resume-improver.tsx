@@ -122,7 +122,7 @@ export function ResumeImprover({ resume }: { resume: Resume }) {
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                             </div>
                         ) : suggestions ? (
-                            <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: suggestions.replace(/\n/g, '<br />') }} />
+                            <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: suggestions.replace(/\n/g, '<br />').replace(/### (.*)/g, '<h3 class="font-bold my-2">$1</h3>').replace(/## (.*)/g, '<h2 class="font-bold text-lg my-3">$1</h2>').replace(/# (.*)/g, '<h1 class="font-bold text-xl my-4">$1</h1>') }} />
                         ) : (
                             <p className="text-sm text-muted-foreground text-center pt-32">AI suggestions will appear here.</p>
                         )}

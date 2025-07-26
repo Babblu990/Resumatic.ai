@@ -20,7 +20,7 @@ export type SummarizeDocumentContentInput = z.infer<typeof SummarizeDocumentCont
 
 const SummarizeDocumentContentOutputSchema = z.object({
   summary: z.string().describe('A concise summary of the document content.'),
-  keyInformation: z.string().describe('Key information extracted from the document.'),
+  keyInformation: z.string().describe('Key information extracted from the document as bullet points.'),
   progress: z.string().describe('Progress of the summarization.'),
 });
 export type SummarizeDocumentContentOutput = z.infer<typeof SummarizeDocumentContentOutputSchema>;
@@ -33,9 +33,9 @@ const prompt = ai.definePrompt({
   name: 'summarizeDocumentContentPrompt',
   input: {schema: SummarizeDocumentContentInputSchema},
   output: {schema: SummarizeDocumentContentOutputSchema},
-  prompt: `You are an expert summarizer, skilled at providing concise and informative summaries of documents.
+  prompt: `You are a brilliant research assistant, skilled at distilling complex information into easy-to-digest summaries.
 
-  Please provide a summary of the following document content, highlighting the key information.
+  Please provide a sharp, concise summary of the following document content, and then extract the most critical information as bullet points.
 
   Document Content: {{{documentContent}}}`,
 });
