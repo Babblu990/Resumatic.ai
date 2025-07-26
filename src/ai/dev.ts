@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/improve-resume.ts';
+import '@/ai/flows/rewrite-resume-text.ts';
+import '@/ai/flows/summarize-content.ts';
