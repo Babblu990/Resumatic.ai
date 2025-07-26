@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ResumeEditor } from '@/components/resume-editor';
 import { ResumePreview } from '@/components/resume-preview';
 import { Header } from '@/components/header';
 import { type Resume } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 const initialResumeData: Resume = {
   contact: {
@@ -44,10 +45,43 @@ const initialResumeData: Resume = {
 
 export default function Home() {
   const [resumeData, setResumeData] = useState<Resume>(initialResumeData);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // In a real app, you'd check for a token in localStorage or a cookie.
+    // For this demo, we'll simulate a logged-out state.
+    const loggedIn = typeof window !== 'undefined' ? window.sessionStorage.getItem('isLoggedIn') === 'true' : false;
+    if (!loggedIn) {
+      router.push('/login');
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+
+  // A simple function to simulate login, called from the login page
+  const handleLogin = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('isLoggedIn', 'true');
+    }
+    router.push('/');
+  };
+  
+  // A simple function to simulate logout
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('isLoggedIn');
+    }
+    router.push('/login');
+  };
+
+  if (!isAuthenticated) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header resume={resumeData} />
+      <Header resume={resumeData} onLogout={handleLogout} />
       <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">
         <ResumeEditor resume={resumeData} onUpdate={setResumeData} />
         <ResumePreview resume={resumeData} />

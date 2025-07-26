@@ -20,9 +20,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
-export function Header({ resume }: { resume: Resume }) {
-  const isLoggedIn = true;
+export function Header({ resume, onLogout }: { resume: Resume, onLogout: () => void }) {
+  const isLoggedIn = true; // This will be managed by parent state
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between h-16 px-4 md:px-8 border-b bg-card/80 backdrop-blur-sm shadow-sm">
@@ -71,14 +72,16 @@ export function Header({ resume }: { resume: Resume }) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={onLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button>Log In</Button>
+          <Button asChild>
+            <Link href="/login">Log In</Link>
+          </Button>
         )}
       </div>
     </header>
