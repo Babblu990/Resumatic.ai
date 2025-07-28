@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Success", description: "Logged in successfully!" });
-        router.push('/');
+        router.push('/welcome');
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
         toast({ title: "Success", description: "Account created! Please log in." });
