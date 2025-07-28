@@ -45,12 +45,12 @@ export default function LandingPage() {
               </div>
               <div>
                   <Image 
-                      src="https://storage.googleapis.com/aai-web-samples/app-prototyping/ask-ai-anything/image-1721723528236.png"
+                      src="https://placehold.co/600x400.png"
                       alt="AI Resume Builder Illustration"
                       width={600}
                       height={400}
                       className="rounded-lg shadow-2xl"
-                      data-ai-hint="professional resume"
+                      data-ai-hint="anime character"
                   />
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function LandingPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src="https://placehold.co/48x48.png" alt="Jane D." data-ai-hint="woman person" />
+                        <AvatarImage src="https://placehold.co/48x48.png" alt="Jane D." data-ai-hint="anime girl" />
                         <AvatarFallback>JD</AvatarFallback>
                       </Avatar>
                       <div>
@@ -128,7 +128,7 @@ export default function LandingPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src="https://placehold.co/48x48.png" alt="John S." data-ai-hint="man person" />
+                        <AvatarImage src="https://placehold.co/48x48.png" alt="John S." data-ai-hint="anime boy" />
                         <AvatarFallback>JS</AvatarFallback>
                       </Avatar>
                       <div>
