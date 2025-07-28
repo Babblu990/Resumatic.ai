@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
+import { InteractiveBackground } from '@/components/interactive-background';
 
 const initialResumeData: Resume = {
   contact: {
@@ -64,7 +65,13 @@ export default function Home() {
   };
 
   if (loading) {
-    return <div className="flex h-screen w-full items-center justify-center animated-gradient"><Loader2 className="h-12 w-12 animate-spin text-primary-foreground" /></div>;
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
   
   if (error) {
@@ -76,12 +83,14 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen animated-gradient">
-      <Header resume={resumeData} onLogout={handleLogout} user={user} />
-      <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">
-        <ResumeEditor resume={resumeData} onUpdate={setResumeData} />
-        <ResumePreview resume={resumeData} />
-      </main>
-    </div>
+    <InteractiveBackground>
+      <div className="flex flex-col min-h-screen">
+        <Header resume={resumeData} onLogout={handleLogout} user={user} />
+        <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">
+          <ResumeEditor resume={resumeData} onUpdate={setResumeData} />
+          <ResumePreview resume={resumeData} />
+        </main>
+      </div>
+    </InteractiveBackground>
   );
 }

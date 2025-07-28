@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { InteractiveBackground } from '@/components/interactive-background';
 
 
 export default function LoginPage() {
@@ -62,52 +63,54 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 animated-gradient">
-       <div className="absolute top-8 left-8 flex items-center gap-2">
-        <FileText className="h-8 w-8 text-primary-foreground" />
-        <h1 className="text-xl md:text-2xl font-bold text-primary-foreground font-headline">Resumatic.ai</h1>
+    <InteractiveBackground>
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="absolute top-8 left-8 flex items-center gap-2">
+          <FileText className="h-8 w-8 text-primary-foreground" />
+          <h1 className="text-xl md:text-2xl font-bold text-primary-foreground font-headline">Resumatic.ai</h1>
+        </div>
+        <Card className="w-full max-w-sm shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-headline">{mode === 'login' ? 'Welcome Back' : 'Create an Account'}</CardTitle>
+            <CardDescription>{mode === 'login' ? 'Enter your credentials to access your account.' : 'Create an account to get started.'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={mode === 'signup' ? 'Must be at least 6 characters' : undefined}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Log In' : 'Sign Up')}
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm">
+              {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
+              <Button variant="link" className="p-0 h-auto" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+                {mode === 'login' ? 'Sign up' : 'Log in'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      <Card className="w-full max-w-sm shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline">{mode === 'login' ? 'Welcome Back' : 'Create an Account'}</CardTitle>
-          <CardDescription>{mode === 'login' ? 'Enter your credentials to access your account.' : 'Create an account to get started.'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === 'signup' ? 'Must be at least 6 characters' : undefined}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Log In' : 'Sign Up')}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
-            <Button variant="link" className="p-0 h-auto" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-              {mode === 'login' ? 'Sign up' : 'Log in'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </InteractiveBackground>
   );
 }
