@@ -83,7 +83,7 @@ body {
   position: absolute;
   border-radius: 50%;
   background: hsla(var(--primary) / 0.3);
-  animation: ripple-animation 1s ease-out forwards;
+  animation: ripple-animation 0.7s ease-out forwards;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -95,8 +95,8 @@ body {
     opacity: 1;
   }
   to {
-    width: 200px;
-    height: 200px;
+    width: 400px;
+    height: 400px;
     opacity: 0;
   }
 }
