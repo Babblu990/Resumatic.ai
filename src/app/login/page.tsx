@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { app } from '@/lib/firebase'; // Import the initialized app
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
@@ -43,10 +43,62 @@ function LoginPageContent() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(true); // Start true to check for redirect result
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   
+  const handleAuthError = useCallback((error: any) => {
+    let errorMessage = 'An unexpected error occurred.';
+    switch (error.code) {
+        case 'auth/user-not-found':
+            errorMessage = 'No account found with this email. Please sign up.';
+            break;
+        case 'auth/wrong-password':
+            errorMessage = 'Incorrect password. Please try again.';
+            break;
+        case 'auth/email-already-in-use':
+            errorMessage = 'This email is already in use. Please log in.';
+            break;
+        case 'auth/weak-password':
+            errorMessage = 'Password should be at least 6 characters.';
+            break;
+        case 'auth/configuration-not-found':
+            errorMessage = 'Firebase Email/Password sign-in not enabled. Please enable it in the Firebase console.'
+            break;
+        case 'auth/popup-closed-by-user':
+             errorMessage = 'Sign-in process was cancelled.';
+             break;
+        default:
+            errorMessage = error.message;
+            break;
+    }
+    toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
+    console.error("Authentication error:", error);
+  }, [toast]);
+
+
+  useEffect(() => {
+    const auth = getAuth(app);
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // User successfully signed in.
+          toast({ title: "Success", description: "Logged in successfully!" });
+          router.push('/welcome');
+        } else {
+            // No redirect result, so the user is just visiting the page normally.
+            setIsRedirecting(false);
+        }
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        handleAuthError(error);
+        setIsRedirecting(false);
+      });
+  }, [router, toast, handleAuthError]);
+
+
   useEffect(() => {
     const modeParam = searchParams.get('mode');
     if (modeParam === 'signup') {
@@ -61,17 +113,10 @@ function LoginPageContent() {
     const provider = new GoogleAuthProvider();
     const auth = getAuth(app);
     try {
-      await signInWithPopup(auth, provider);
-      toast({ title: "Success", description: "Logged in successfully!" });
-      router.push('/welcome');
+      await signInWithRedirect(auth, provider);
+      // The page will redirect, so no further code here will execute.
     } catch (error: any) {
-        let errorMessage = 'Could not sign in with Google. Please try again.';
-        if (error.code === 'auth/popup-closed-by-user') {
-            errorMessage = 'Sign-in process was cancelled.';
-        }
-        toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
-        console.error(error);
-    } finally {
+        handleAuthError(error)
         setIsGoogleLoading(false);
     }
   };
@@ -92,29 +137,7 @@ function LoginPageContent() {
         router.replace('/login'); // To clear the query param
       }
     } catch (error: any) {
-        let errorMessage = 'An unexpected error occurred.';
-        switch (error.code) {
-            case 'auth/user-not-found':
-                errorMessage = 'No account found with this email. Please sign up.';
-                break;
-            case 'auth/wrong-password':
-                errorMessage = 'Incorrect password. Please try again.';
-                break;
-            case 'auth/email-already-in-use':
-                errorMessage = 'This email is already in use. Please log in.';
-                break;
-            case 'auth/weak-password':
-                errorMessage = 'Password should be at least 6 characters.';
-                break;
-            case 'auth/configuration-not-found':
-                errorMessage = 'Firebase Email/Password sign-in not enabled. Please enable it in the Firebase console.'
-                break;
-            default:
-                errorMessage = error.message;
-                break;
-        }
-      toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
-      console.error(error);
+        handleAuthError(error);
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +147,19 @@ function LoginPageContent() {
     setMode(newMode);
     const newPath = newMode === 'signup' ? '/login?mode=signup' : '/login';
     router.replace(newPath, { scroll: false });
+  }
+
+  if (isRedirecting) {
+     return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-primary-foreground">
+             <Loader2 className="h-12 w-12 animate-spin" />
+             <p>Signing in, please wait...</p>
+          </div>
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (
