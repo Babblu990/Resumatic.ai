@@ -1,16 +1,18 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ResumeEditor } from '@/components/resume-editor';
-import { ResumePreview } from '@/components/resume-preview';
+import { ResumePreview, resumeToString } from '@/components/resume-preview';
 import { Header } from '@/components/header';
 import { type Resume } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { InteractiveBackground } from '@/components/interactive-background';
+import { rateResume } from '@/ai/flows/rate-resume';
+import { useToast } from '@/hooks/use-toast';
 
 const initialResumeData: Resume = {
   contact: {
@@ -48,10 +50,48 @@ const initialResumeData: Resume = {
 };
 
 
+// A simple debounce function
+function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<F>): Promise<ReturnType<F>> =>
+    new Promise(resolve => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => resolve(func(...args)), waitFor);
+    });
+}
+
+
 export default function Home() {
   const [resumeData, setResumeData] = useState<Resume>(initialResumeData);
   const [user, loading, error] = useAuthState(auth);
+  const [resumeScore, setResumeScore] = useState<number | null>(null);
+  const [isRating, setIsRating] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+
+  const debouncedRateResume = useMemo(() => 
+    debounce(async (resume: Resume) => {
+      setIsRating(true);
+      try {
+        const result = await rateResume({ resumeText: resumeToString(resume) });
+        setResumeScore(result.score);
+         toast({
+          title: (
+            <div className="flex items-center">
+              <Sparkles className="mr-2 h-4 w-4 text-accent" />
+              AI Feedback
+            </div>
+          ),
+          description: `Score: ${result.score}/100. ${result.feedback}`,
+        });
+      } catch (e) {
+        console.error("Failed to rate resume:", e);
+      } finally {
+        setIsRating(false);
+      }
+    }, 2000), // 2-second debounce delay
+  [toast]);
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -59,6 +99,13 @@ export default function Home() {
     }
   }, [user, loading, router]);
   
+  useEffect(() => {
+    if (user) { // Only rate if user is logged in
+      debouncedRateResume(resumeData);
+    }
+  }, [resumeData, user, debouncedRateResume]);
+
+
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/login');
@@ -83,7 +130,13 @@ export default function Home() {
   }
 
   return (
-    <InteractiveBackground>
+    <InteractiveBackground score={resumeScore}>
+       {isRating && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-primary/10 backdrop-blur-sm text-primary-foreground font-medium text-sm py-1 px-3 rounded-full flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            AI is analyzing your resume...
+          </div>
+        )}
       <div className="flex flex-col min-h-screen">
         <Header resume={resumeData} onLogout={handleLogout} user={user} />
         <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">

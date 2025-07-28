@@ -4,6 +4,39 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from './ui/scroll-area';
 import { Mail, Phone, Linkedin, Github, MapPin } from 'lucide-react';
 
+export function resumeToString(resume: Resume): string {
+    const experience = resume.experience.map(e => `Company: ${e.company}\nRole: ${e.role}\nDates: ${e.startDate} - ${e.endDate}\nDescription: ${e.description}`).join('\n\n');
+    const education = resume.education.map(e => `Institution: ${e.institution}\nDegree: ${e.degree}\nDates: ${e.startDate} - ${e.endDate}\nDescription: ${e.description}`).join('\n\n');
+    const projects = resume.projects.map(p => `Project: ${p.name}\nURL: ${p.url}\nDescription: ${p.description}`).join('\n\n');
+
+    return `
+# Resume of ${resume.contact.name}
+
+## Contact
+Email: ${resume.contact.email}
+Phone: ${resume.contact.phone}
+LinkedIn: ${resume.contact.linkedin}
+GitHub: ${resume.contact.github}
+Location: ${resume.contact.location}
+
+## Summary
+${resume.summary}
+
+## Skills
+${resume.skills.join(', ')}
+
+## Experience
+${experience || 'No experience listed.'}
+
+## Education
+${education}
+
+## Projects
+${projects || 'No projects listed.'}
+    `;
+}
+
+
 export function ResumePreview({ resume }: { resume: Resume }) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)] rounded-lg">
@@ -27,7 +60,7 @@ export function ResumePreview({ resume }: { resume: Resume }) {
 
           <section className="mb-6">
             <h3 className="text-base font-bold uppercase tracking-widest text-primary mb-2 border-b-2 border-primary/20 pb-1">Experience</h3>
-            {resume.experience.map((exp, index) => (
+            {resume.experience.length > 0 ? resume.experience.map((exp, index) => (
               <div key={index} className="mb-4 last:mb-0">
                 <div className="flex justify-between items-baseline">
                   <h4 className="font-bold text-base">{exp.role}</h4>
@@ -38,7 +71,7 @@ export function ResumePreview({ resume }: { resume: Resume }) {
                     {exp.description.split('\n').map((line, i) => line && <li key={i}>{line.replace(/^- /, '')}</li>)}
                 </ul>
               </div>
-            ))}
+            )) : <p className="text-muted-foreground italic">No work experience provided.</p>}
           </section>
 
           <section className="mb-6">
@@ -66,7 +99,7 @@ export function ResumePreview({ resume }: { resume: Resume }) {
 
           <section>
             <h3 className="text-base font-bold uppercase tracking-widest text-primary mb-2 border-b-2 border-primary/20 pb-1">Projects</h3>
-            {resume.projects.map((proj, index) => (
+            {resume.projects.length > 0 ? resume.projects.map((proj, index) => (
               <div key={index} className="mb-4 last:mb-0">
                  <div className="flex items-center gap-4">
                     <h4 className="font-bold text-base">{proj.name}</h4>
@@ -74,7 +107,7 @@ export function ResumePreview({ resume }: { resume: Resume }) {
                  </div>
                  <p className="mt-1 text-foreground/80">{proj.description}</p>
               </div>
-            ))}
+            )) : <p className="text-muted-foreground italic">No projects provided.</p>}
           </section>
         </CardContent>
       </Card>
