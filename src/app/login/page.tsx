@@ -10,7 +10,7 @@ import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { app, auth } from '@/lib/firebase'; // Import the initialized app
+import { app } from '@/lib/firebase'; // Import the initialized app
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
 
@@ -59,6 +59,7 @@ function LoginPageContent() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
+    const auth = getAuth(app);
     try {
       await signInWithPopup(auth, provider);
       toast({ title: "Success", description: "Logged in successfully!" });
@@ -78,6 +79,7 @@ function LoginPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    const auth = getAuth(app);
     try {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
