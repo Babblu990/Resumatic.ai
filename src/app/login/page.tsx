@@ -78,14 +78,22 @@ function LoginPageContent() {
     toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
     console.error("Authentication error:", error);
   }, [toast]);
-  
+
+  // This effect redirects the user if they are logged in
+  useEffect(() => {
+      if (!userLoading && user) {
+          router.push('/welcome');
+      }
+  }, [user, userLoading, router]);
+
   // This effect runs once on mount to handle the redirect result from Google
   useEffect(() => {
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
           // User successfully signed in via redirect.
-          // The useAuthState hook will pick up the new user session.
+          // The `useAuthState` hook above will see the new user
+          // and the other useEffect will handle the redirect to /welcome.
           toast({ title: "Success", description: "Logged in successfully!" });
         }
         // Whether there was a result or not, we can stop the Google loading indicator.
@@ -96,14 +104,9 @@ function LoginPageContent() {
         handleAuthError(error);
         setIsGoogleLoading(false);
       });
-  }, [auth, handleAuthError, toast]);
-  
-  // This effect redirects the user if they are logged in
-  useEffect(() => {
-      if (!userLoading && user) {
-          router.push('/welcome');
-      }
-  }, [user, userLoading, router]);
+  // The empty dependency array is correct here. We only want this to run ONCE on mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
 
 
   useEffect(() => {
@@ -120,7 +123,7 @@ function LoginPageContent() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
-      // The page will redirect away, no further code will execute.
+      // The page will redirect away, no further code will execute here.
     } catch (error: any) {
         handleAuthError(error)
         setIsGoogleLoading(false);
@@ -167,7 +170,7 @@ function LoginPageContent() {
     );
   }
 
-  // If user is already logged in, they will be redirected by the useEffect. 
+  // If user is already logged in, they will be redirected by the useEffect.
   // We can return null here to avoid flashing the login form.
   if (user) {
     return null;
