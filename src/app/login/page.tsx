@@ -43,15 +43,18 @@ function LoginPageContent() {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(true); // Start true to check for redirect result
+  const [isGoogleLoading, setIsGoogleLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const auth = getAuth(app);
   const [user, userLoading] = useAuthState(auth);
 
+  console.log('[AUTH STATE] User:', user, 'Loading:', userLoading);
+
   const handleAuthError = useCallback((error: any) => {
     let errorMessage = 'An unexpected error occurred.';
+    console.error("[AUTH ERROR]", error.code, error.message);
     switch (error.code) {
         case 'auth/user-not-found':
             errorMessage = 'No account found with this email. Please sign up.';
@@ -76,31 +79,32 @@ function LoginPageContent() {
             break;
     }
     toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
-    console.error("Authentication error:", error);
   }, [toast]);
 
   // This effect redirects the user if they are logged in
   useEffect(() => {
-      if (!userLoading && user) {
-          router.push('/welcome');
-      }
+    console.log('[REDIRECT EFFECT] Checking for user. User loading:', userLoading, 'User found:', !!user);
+    if (!userLoading && user) {
+        console.log('[REDIRECT EFFECT] User is logged in. Redirecting to /welcome');
+        router.push('/welcome');
+    }
   }, [user, userLoading, router]);
 
   // This effect runs once on mount to handle the redirect result from Google
   useEffect(() => {
+    console.log('[REDIRECT RESULT EFFECT] Checking for redirect result.');
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          // User successfully signed in via redirect.
-          // The `useAuthState` hook above will see the new user
-          // and the other useEffect will handle the redirect to /welcome.
+          console.log('[REDIRECT RESULT EFFECT] Successfully got redirect result. User:', result.user);
           toast({ title: "Success", description: "Logged in successfully!" });
+        } else {
+           console.log('[REDIRECT RESULT EFFECT] No redirect result found.');
         }
-        // Whether there was a result or not, we can stop the Google loading indicator.
         setIsGoogleLoading(false);
       })
       .catch((error) => {
-        // Handle Errors here.
+        console.error('[REDIRECT RESULT EFFECT] Error getting redirect result:', error);
         handleAuthError(error);
         setIsGoogleLoading(false);
       });
@@ -120,11 +124,12 @@ function LoginPageContent() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
+    console.log('[GOOGLE SIGN-IN] Initiating sign in with redirect.');
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
-      // The page will redirect away, no further code will execute here.
     } catch (error: any) {
+        console.error('[GOOGLE SIGN-IN] Error starting redirect sign in:', error);
         handleAuthError(error)
         setIsGoogleLoading(false);
     }
@@ -136,12 +141,11 @@ function LoginPageContent() {
     try {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
-        // The useAuthState hook will handle the redirect
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
         toast({ title: "Success", description: "Account created! Please log in." });
         setMode('login');
-        router.replace('/login'); // To clear the query param
+        router.replace('/login');
       }
     } catch (error: any) {
         handleAuthError(error);
@@ -156,8 +160,7 @@ function LoginPageContent() {
     router.replace(newPath, { scroll: false });
   }
 
-  // Show a loading screen while checking for redirect or if user state is loading
-  if (isGoogleLoading || userLoading) {
+  if (userLoading || isGoogleLoading) {
      return (
       <InteractiveBackground>
         <div className="flex h-screen w-full items-center justify-center">
@@ -170,9 +173,8 @@ function LoginPageContent() {
     );
   }
 
-  // If user is already logged in, they will be redirected by the useEffect.
-  // We can return null here to avoid flashing the login form.
   if (user) {
+    console.log('[RENDER] User exists, but redirect effect has not run yet. Returning null.');
     return null;
   }
 
