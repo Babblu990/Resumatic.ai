@@ -51,6 +51,9 @@ export default function LoginPage() {
             case 'auth/weak-password':
                 errorMessage = 'Password should be at least 6 characters.';
                 break;
+            case 'auth/configuration-not-found':
+                errorMessage = 'Firebase Email/Password sign-in not enabled. Please enable it in the Firebase console.'
+                break;
             default:
                 errorMessage = error.message;
                 break;
