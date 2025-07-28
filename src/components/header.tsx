@@ -1,3 +1,4 @@
+
 'use client';
 import { FileText, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,9 +22,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { type User as FirebaseUser } from 'firebase/auth';
 
-export function Header({ resume, onLogout }: { resume: Resume, onLogout: () => void }) {
-  const isLoggedIn = true; // This will be managed by parent state
+export function Header({ resume, onLogout, user }: { resume: Resume, onLogout: () => void, user: FirebaseUser | null }) {
+  
+  const getInitials = (email: string | null | undefined) => {
+    if (!email) return 'U';
+    return email.substring(0, 2).toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between h-16 px-4 md:px-8 border-b bg-card/80 backdrop-blur-sm shadow-sm">
@@ -48,22 +54,22 @@ export function Header({ resume, onLogout }: { resume: Resume, onLogout: () => v
 
         <ExportDialog resume={resume} />
         
-        {isLoggedIn ? (
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10 border-2 border-primary/50">
-                  <AvatarImage src="https://placehold.co/40x40.png" alt="User avatar" data-ai-hint="person portrait" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png`} alt="User avatar" data-ai-hint="person portrait" />
+                  <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    john.doe@example.com
+                    {user.email}
                   </p>
                 </div>
               </DropdownMenuLabel>

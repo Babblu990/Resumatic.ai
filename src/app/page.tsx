@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,6 +7,9 @@ import { ResumePreview } from '@/components/resume-preview';
 import { Header } from '@/components/header';
 import { type Resume } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { Loader2 } from 'lucide-react';
 
 const initialResumeData: Resume = {
   contact: {
@@ -45,43 +49,35 @@ const initialResumeData: Resume = {
 
 export default function Home() {
   const [resumeData, setResumeData] = useState<Resume>(initialResumeData);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
 
   useEffect(() => {
-    // In a real app, you'd check for a token in localStorage or a cookie.
-    // For this demo, we'll simulate a logged-out state.
-    const loggedIn = typeof window !== 'undefined' ? window.sessionStorage.getItem('isLoggedIn') === 'true' : false;
-    if (!loggedIn) {
+    if (!loading && !user) {
       router.push('/login');
-    } else {
-      setIsAuthenticated(true);
     }
-  }, [router]);
-
-  // A simple function to simulate login, called from the login page
-  const handleLogin = () => {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem('isLoggedIn', 'true');
-    }
-    router.push('/');
-  };
+  }, [user, loading, router]);
   
-  // A simple function to simulate logout
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.removeItem('isLoggedIn');
-    }
+  const handleLogout = async () => {
+    await auth.signOut();
     router.push('/login');
   };
 
-  if (!isAuthenticated) {
-    return null; // or a loading spinner
+  if (loading) {
+    return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  }
+  
+  if (error) {
+    return <div><p>Error: {error.message}</p></div>;
+  }
+
+  if (!user) {
+    return null; // Or a loading spinner, router should redirect
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header resume={resumeData} onLogout={handleLogout} />
+      <Header resume={resumeData} onLogout={handleLogout} user={user} />
       <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">
         <ResumeEditor resume={resumeData} onUpdate={setResumeData} />
         <ResumePreview resume={resumeData} />
