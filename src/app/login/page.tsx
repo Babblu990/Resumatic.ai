@@ -10,9 +10,10 @@ import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
-import { app } from '@/lib/firebase'; // Import the initialized app
+import { app } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 function GoogleIcon() {
   return (
@@ -42,12 +43,13 @@ function LoginPageContent() {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(true); // Start true to check for redirect result
+  const [isGoogleLoading, setIsGoogleLoading] = useState(true); // Start true to check for redirect result
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  
+  const auth = getAuth(app);
+  const [user, userLoading] = useAuthState(auth);
+
   const handleAuthError = useCallback((error: any) => {
     let errorMessage = 'An unexpected error occurred.';
     switch (error.code) {
@@ -76,27 +78,32 @@ function LoginPageContent() {
     toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
     console.error("Authentication error:", error);
   }, [toast]);
-
-
+  
+  // This effect runs once on mount to handle the redirect result from Google
   useEffect(() => {
-    const auth = getAuth(app);
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          // User successfully signed in.
+          // User successfully signed in via redirect.
+          // The useAuthState hook will pick up the new user session.
           toast({ title: "Success", description: "Logged in successfully!" });
-          router.push('/welcome');
-        } else {
-            // No redirect result, so the user is just visiting the page normally.
-            setIsRedirecting(false);
         }
+        // Whether there was a result or not, we can stop the Google loading indicator.
+        setIsGoogleLoading(false);
       })
       .catch((error) => {
         // Handle Errors here.
         handleAuthError(error);
-        setIsRedirecting(false);
+        setIsGoogleLoading(false);
       });
-  }, [router, toast, handleAuthError]);
+  }, [auth, handleAuthError, toast]);
+  
+  // This effect redirects the user if they are logged in
+  useEffect(() => {
+      if (!userLoading && user) {
+          router.push('/welcome');
+      }
+  }, [user, userLoading, router]);
 
 
   useEffect(() => {
@@ -111,10 +118,9 @@ function LoginPageContent() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
-    const auth = getAuth(app);
     try {
       await signInWithRedirect(auth, provider);
-      // The page will redirect, so no further code here will execute.
+      // The page will redirect away, no further code will execute.
     } catch (error: any) {
         handleAuthError(error)
         setIsGoogleLoading(false);
@@ -124,12 +130,10 @@ function LoginPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const auth = getAuth(app);
     try {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Success", description: "Logged in successfully!" });
-        router.push('/welcome');
+        // The useAuthState hook will handle the redirect
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
         toast({ title: "Success", description: "Account created! Please log in." });
@@ -149,17 +153,24 @@ function LoginPageContent() {
     router.replace(newPath, { scroll: false });
   }
 
-  if (isRedirecting) {
+  // Show a loading screen while checking for redirect or if user state is loading
+  if (isGoogleLoading || userLoading) {
      return (
       <InteractiveBackground>
         <div className="flex h-screen w-full items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-primary-foreground">
              <Loader2 className="h-12 w-12 animate-spin" />
-             <p>Signing in, please wait...</p>
+             <p>Please wait...</p>
           </div>
         </div>
       </InteractiveBackground>
     );
+  }
+
+  // If user is already logged in, they will be redirected by the useEffect. 
+  // We can return null here to avoid flashing the login form.
+  if (user) {
+    return null;
   }
 
   return (
