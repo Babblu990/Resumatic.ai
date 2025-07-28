@@ -7,7 +7,7 @@ const firebaseConfig = {
   appId: "1:304882457255:web:672e3320d63ee3af201982",
   storageBucket: "resumaticai-wr94t.firebasestorage.app",
   apiKey: "AIzaSyDoHvBE6Ws2Bd17IuCUi_XDOPZJ7-nka_4",
-  authDomain: "resumaticai-wr94t.firebaseapp.com",
+  authDomain: "localhost",
   messagingSenderId: "304882457255",
 };
 
