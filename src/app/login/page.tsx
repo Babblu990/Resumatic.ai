@@ -1,27 +1,36 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
 
-
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const modeParam = searchParams.get('mode');
+    if (modeParam === 'signup') {
+      setMode('signup');
+    } else {
+      setMode('login');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +44,7 @@ export default function LoginPage() {
         await createUserWithEmailAndPassword(auth, email, password);
         toast({ title: "Success", description: "Account created! Please log in." });
         setMode('login');
+        router.replace('/login'); // To clear the query param
       }
     } catch (error: any) {
         let errorMessage = 'An unexpected error occurred.';
@@ -64,6 +74,12 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  const handleModeChange = (newMode: 'login' | 'signup') => {
+    setMode(newMode);
+    const newPath = newMode === 'signup' ? '/login?mode=signup' : '/login';
+    router.replace(newPath, { scroll: false });
+  }
 
   return (
     <InteractiveBackground>
@@ -107,7 +123,7 @@ export default function LoginPage() {
             </form>
             <div className="mt-4 text-center text-sm">
               {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
-              <Button variant="link" className="p-0 h-auto" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+              <Button variant="link" className="p-0 h-auto" onClick={() => handleModeChange(mode === 'login' ? 'signup' : 'login')}>
                 {mode === 'login' ? 'Sign up' : 'Log in'}
               </Button>
             </div>
@@ -116,4 +132,13 @@ export default function LoginPage() {
       </div>
     </InteractiveBackground>
   );
+}
+
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
+  )
 }
