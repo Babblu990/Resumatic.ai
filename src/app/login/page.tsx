@@ -10,7 +10,7 @@ import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { app } from '@/lib/firebase'; // Import the initialized app
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
 
@@ -46,6 +46,7 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const auth = getAuth(app);
 
   useEffect(() => {
     const modeParam = searchParams.get('mode');
