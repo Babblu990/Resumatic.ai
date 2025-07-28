@@ -62,10 +62,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 animated-gradient">
        <div className="absolute top-8 left-8 flex items-center gap-2">
-        <FileText className="h-8 w-8 text-primary" />
-        <h1 className="text-xl md:text-2xl font-bold text-primary font-headline">Resumatic.ai</h1>
+        <FileText className="h-8 w-8 text-primary-foreground" />
+        <h1 className="text-xl md:text-2xl font-bold text-primary-foreground font-headline">Resumatic.ai</h1>
       </div>
       <Card className="w-full max-w-sm shadow-lg">
         <CardHeader>
