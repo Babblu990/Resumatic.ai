@@ -155,8 +155,8 @@ export default function EmployeeEditorPage() {
       <div className="flex flex-col min-h-screen">
         <Header resume={resumeData} onLogout={handleLogout} user={user} />
         <main className="flex-1 container mx-auto p-4 md:p-8 grid md:grid-cols-2 gap-8 items-start">
-          <ResumeEditor resume={resumeData} onUpdate={setResumeData} />
-          <ResumePreview resume={resumeData} />
+          <ResumeEditor resume={resumeData} onUpdate={setResumeData} showExperience={true} />
+          <ResumePreview resume={resumeData} showExperience={true} />
         </main>
       </div>
     </InteractiveBackground>

@@ -1,3 +1,4 @@
+
 'use client';
 import { type Resume } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import { Label } from './ui/label';
 interface ResumeEditorProps {
   resume: Resume;
   onUpdate: (resume: Resume) => void;
+  showExperience: boolean;
 }
 
 // Replaces the functionality of the 'text-reader' package
@@ -60,7 +62,7 @@ async function readFileAsText(file: File): Promise<string> {
 }
 
 
-export function ResumeEditor({ resume, onUpdate }: ResumeEditorProps) {
+export function ResumeEditor({ resume, onUpdate, showExperience }: ResumeEditorProps) {
   const { toast } = useToast();
   const [isParsing, setIsParsing] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -162,10 +164,10 @@ export function ResumeEditor({ resume, onUpdate }: ResumeEditorProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Accordion type="multiple" defaultValue={['contact', 'summary', 'experience']} className="w-full">
+          <Accordion type="multiple" defaultValue={['contact', 'summary', 'experience', 'education', 'skills', 'projects']} className="w-full">
             <ContactEditor resume={resume} onUpdate={onUpdate} />
             <SummaryEditor resume={resume} onUpdate={onUpdate} />
-            <ExperienceEditor resume={resume} onUpdate={onUpdate} />
+            {showExperience && <ExperienceEditor resume={resume} onUpdate={onUpdate} />}
             <EducationEditor resume={resume} onUpdate={onUpdate} />
             <SkillsEditor resume={resume} onUpdate={onUpdate} />
             <ProjectsEditor resume={resume} onUpdate={onUpdate} />

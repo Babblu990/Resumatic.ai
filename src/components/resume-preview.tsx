@@ -1,3 +1,4 @@
+
 import { type Resume } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -37,7 +38,7 @@ ${projects || 'No projects listed.'}
 }
 
 
-export function ResumePreview({ resume }: { resume: Resume }) {
+export function ResumePreview({ resume, showExperience }: { resume: Resume, showExperience: boolean }) {
   return (
     <ScrollArea className="h-[calc(100vh-8rem)] rounded-lg">
       <Card className="h-full shadow-lg">
@@ -58,21 +59,23 @@ export function ResumePreview({ resume }: { resume: Resume }) {
             <p className="text-foreground/80">{resume.summary}</p>
           </section>
 
-          <section className="mb-6">
-            <h3 className="text-base font-bold uppercase tracking-widest text-primary mb-2 border-b-2 border-primary/20 pb-1">Experience</h3>
-            {resume.experience.length > 0 ? resume.experience.map((exp, index) => (
-              <div key={index} className="mb-4 last:mb-0">
-                <div className="flex justify-between items-baseline">
-                  <h4 className="font-bold text-base">{exp.role}</h4>
-                  <p className="text-xs text-muted-foreground">{exp.startDate} - {exp.endDate}</p>
+          {showExperience && (
+            <section className="mb-6">
+              <h3 className="text-base font-bold uppercase tracking-widest text-primary mb-2 border-b-2 border-primary/20 pb-1">Experience</h3>
+              {resume.experience.length > 0 ? resume.experience.map((exp, index) => (
+                <div key={index} className="mb-4 last:mb-0">
+                  <div className="flex justify-between items-baseline">
+                    <h4 className="font-bold text-base">{exp.role}</h4>
+                    <p className="text-xs text-muted-foreground">{exp.startDate} - {exp.endDate}</p>
+                  </div>
+                  <p className="italic text-foreground/90">{exp.company}</p>
+                  <ul className="mt-1 text-foreground/80 list-disc list-inside space-y-1">
+                      {exp.description.split('\n').map((line, i) => line && <li key={i}>{line.replace(/^- /, '')}</li>)}
+                  </ul>
                 </div>
-                <p className="italic text-foreground/90">{exp.company}</p>
-                <ul className="mt-1 text-foreground/80 list-disc list-inside space-y-1">
-                    {exp.description.split('\n').map((line, i) => line && <li key={i}>{line.replace(/^- /, '')}</li>)}
-                </ul>
-              </div>
-            )) : <p className="text-muted-foreground italic">No work experience provided.</p>}
-          </section>
+              )) : <p className="text-muted-foreground italic">No work experience provided.</p>}
+            </section>
+          )}
 
           <section className="mb-6">
             <h3 className="text-base font-bold uppercase tracking-widest text-primary mb-2 border-b-2 border-primary/20 pb-1">Education</h3>
