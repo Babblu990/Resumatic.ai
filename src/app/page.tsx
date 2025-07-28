@@ -8,6 +8,7 @@ import { FileText, Lightbulb, FileCheck, Download, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { InteractiveBackground } from '@/components/interactive-background';
+import {image1} from '@/assets/images';
 
 export default function LandingPage() {
   return (
@@ -45,7 +46,7 @@ export default function LandingPage() {
               </div>
               <div>
                   <Image 
-                      src="https://placehold.co/600x400.png"
+                      src={image1}
                       alt="AI Resume Builder Illustration"
                       width={600}
                       height={400}
