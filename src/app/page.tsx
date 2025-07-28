@@ -43,12 +43,12 @@ export default function LandingPage() {
             </div>
             <div>
                 <Image 
-                    src="https://placehold.co/600x400.png"
+                    src="https://storage.googleapis.com/aai-web-samples/user-provided/600x400-0.png"
                     alt="AI Resume Builder Illustration"
                     width={600}
                     height={400}
                     className="rounded-lg"
-                    data-ai-hint="illustration person laptop"
+                    data-ai-hint="illustration woman resume"
                 />
             </div>
           </div>
