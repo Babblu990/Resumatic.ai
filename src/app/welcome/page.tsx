@@ -23,7 +23,11 @@ export default function WelcomePage() {
   const handleSelection = (role: 'student' | 'employee') => {
     // For now, we just redirect. In the future, this could be saved to a user profile.
     console.log(`User selected role: ${role}`);
-    router.push('/editor');
+    if (role === 'student') {
+        router.push('/editor');
+    } else {
+        router.push('/employee-editor');
+    }
   };
 
   if (loading) {
