@@ -97,6 +97,7 @@ function LoginPageContent() {
         if (result) {
           console.log('[REDIRECT RESULT EFFECT] Successfully got redirect result. User:', result.user);
           toast({ title: "Success", description: "Logged in successfully!" });
+          router.push('/welcome');
         } else {
            console.log('[REDIRECT RESULT EFFECT] No redirect result found.');
         }
