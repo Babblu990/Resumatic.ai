@@ -45,7 +45,7 @@ export default function WelcomePage() {
   }
   
   if (!user) {
-    return null; // Should be redirected
+    return null; // This will be handled by the useEffect redirect
   }
 
   return (

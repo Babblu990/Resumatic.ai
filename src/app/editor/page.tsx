@@ -126,7 +126,7 @@ export default function EditorPage() {
   }
 
   if (!user) {
-    return null; // Or a loading spinner, router should redirect
+    return null; // This will be handled by the useEffect redirect
   }
 
   return (
