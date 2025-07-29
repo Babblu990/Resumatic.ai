@@ -94,14 +94,14 @@ function LoginPageContent() {
       .then((result) => {
         if (result) {
           toast({ title: "Success", description: "Logged in successfully!" });
-          router.push('/welcome');
-        } else {
-           setIsGoogleLoading(false);
+          // The effect above will handle the redirect
         }
       })
       .catch((error) => {
         handleAuthError(error);
-        setIsGoogleLoading(false);
+      })
+      .finally(() => {
+          setIsGoogleLoading(false);
       });
   // The empty dependency array is correct here. We only want this to run ONCE on mount.
   // eslint-disable-next-line react-hooks/exhaustive-deps

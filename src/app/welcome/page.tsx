@@ -45,7 +45,9 @@ export default function WelcomePage() {
   }
   
   if (!user) {
-    return null; // This will be handled by the useEffect redirect
+    // This state is handled by the useEffect redirect, so we can return null 
+    // to avoid a flash of the component.
+    return null;
   }
 
   return (
