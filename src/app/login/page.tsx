@@ -49,8 +49,6 @@ function LoginPageContent() {
   const { toast } = useToast();
   const [user, userLoading] = useAuthState(auth);
 
-  console.log('[AUTH STATE] User:', user, 'Loading:', userLoading);
-
   const handleAuthError = useCallback((error: any) => {
     let errorMessage = 'An unexpected error occurred.';
     console.error("[AUTH ERROR]", error.code, error.message);
@@ -73,6 +71,9 @@ function LoginPageContent() {
         case 'auth/popup-closed-by-user':
              errorMessage = 'Sign-in process was cancelled.';
              break;
+        case 'auth/argument-error':
+            errorMessage = 'There was a configuration error. Please try again later.';
+            break;
         default:
             errorMessage = error.message;
             break;
@@ -82,29 +83,23 @@ function LoginPageContent() {
 
   // This effect redirects the user if they are logged in
   useEffect(() => {
-    console.log('[REDIRECT EFFECT] Checking for user. User loading:', userLoading, 'User found:', !!user);
     if (!userLoading && user) {
-        console.log('[REDIRECT EFFECT] User is logged in. Redirecting to /welcome');
         router.push('/welcome');
     }
   }, [user, userLoading, router]);
 
   // This effect runs once on mount to handle the redirect result from Google
   useEffect(() => {
-    console.log('[REDIRECT RESULT EFFECT] Checking for redirect result.');
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          console.log('[REDIRECT RESULT EFFECT] Successfully got redirect result. User:', result.user);
           toast({ title: "Success", description: "Logged in successfully!" });
           router.push('/welcome');
         } else {
-           console.log('[REDIRECT RESULT EFFECT] No redirect result found.');
+           setIsGoogleLoading(false);
         }
-        setIsGoogleLoading(false);
       })
       .catch((error) => {
-        console.error('[REDIRECT RESULT EFFECT] Error getting redirect result:', error);
         handleAuthError(error);
         setIsGoogleLoading(false);
       });
@@ -124,7 +119,6 @@ function LoginPageContent() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    console.log('[GOOGLE SIGN-IN] Initiating sign in with redirect.');
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
@@ -174,7 +168,6 @@ function LoginPageContent() {
   }
 
   if (user) {
-    console.log('[RENDER] User exists, but redirect effect has not run yet. Returning null.');
     return null;
   }
 
