@@ -15,7 +15,14 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) {
+      console.log('[WELCOME PAGE] Auth state loading...');
+      return;
+    }
+    if (user) {
+      console.log(`[WELCOME PAGE] User authenticated: ${user.displayName || user.email}`);
+    } else {
+      console.log('[WELCOME PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
   }, [user, loading, router]);
@@ -51,9 +58,15 @@ export default function WelcomePage() {
   }
   
   if (!user) {
-    // This state is handled by the useEffect redirect, so we can return null 
+    // This state is handled by the useEffect redirect, so we can return a loader 
     // to avoid a flash of the component while redirecting.
-    return null;
+     return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (
@@ -61,7 +74,7 @@ export default function WelcomePage() {
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline text-center">Welcome to Resumatic.ai!</CardTitle>
+            <CardTitle className="text-2xl font-headline text-center">Welcome, {user.displayName || user.email}!</CardTitle>
             <CardDescription className="text-center">To help us tailor your experience, please select your current status.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">

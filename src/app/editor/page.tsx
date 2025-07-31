@@ -94,17 +94,19 @@ export default function EditorPage() {
 
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) {
+      console.log('[EDITOR PAGE] Auth state loading...');
+      return;
+    }
+    if (user) {
+       console.log(`[EDITOR PAGE] User authenticated: ${user.displayName || user.email}`);
+       debouncedRateResume(resumeData);
+    } else {
+      console.log('[EDITOR PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, resumeData, debouncedRateResume]);
   
-  useEffect(() => {
-    if (user) { // Only rate if user is logged in
-      debouncedRateResume(resumeData);
-    }
-  }, [resumeData, user, debouncedRateResume]);
-
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -132,9 +134,15 @@ export default function EditorPage() {
   }
 
   if (!user) {
-    // This state is handled by the useEffect redirect, so we can return null 
+    // This state is handled by the useEffect redirect, so we can return a loader
     // to avoid a flash of the component while redirecting.
-    return null;
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (

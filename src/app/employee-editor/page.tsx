@@ -109,16 +109,18 @@ export default function EmployeeEditorPage() {
 
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) {
+      console.log('[EMPLOYEE EDITOR PAGE] Auth state loading...');
+      return;
+    }
+    if (user) {
+      console.log(`[EMPLOYEE EDITOR PAGE] User authenticated: ${user.displayName || user.email}`);
+      debouncedRateResume(resumeData);
+    } else {
+       console.log('[EMPLOYEE EDITOR PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
-  }, [user, loading, router]);
-  
-  useEffect(() => {
-    if (user) { // Only rate if user is logged in
-      debouncedRateResume(resumeData);
-    }
-  }, [resumeData, user, debouncedRateResume]);
+  }, [user, loading, router, resumeData, debouncedRateResume]);
 
 
   const handleLogout = async () => {
@@ -147,9 +149,15 @@ export default function EmployeeEditorPage() {
   }
 
   if (!user) {
-    // This state is handled by the useEffect redirect, so we can return null 
+    // This state is handled by the useEffect redirect, so we can return a loader
     // to avoid a flash of the component while redirecting.
-    return null;
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (
