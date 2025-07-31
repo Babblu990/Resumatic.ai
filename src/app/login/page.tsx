@@ -71,7 +71,7 @@ function LoginPageContent() {
             errorMessage = 'Password should be at least 6 characters.';
             break;
         case 'auth/popup-closed-by-user':
-             errorMessage = 'Sign-in process was cancelled. Please try again.';
+             errorMessage = 'Sign-in process was cancelled. Please try again. If this persists, your browser might be blocking popups.';
              break;
         case 'auth/argument-error':
             errorMessage = 'There was a configuration error. Please ensure this domain is added to the "Authorized Domains" list in your Firebase Authentication settings.';
@@ -249,5 +249,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-
-    
