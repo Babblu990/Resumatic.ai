@@ -94,17 +94,23 @@ export default function EditorPage() {
 
 
   useEffect(() => {
-    if (!loading && !user) {
+    // Log the state on every render
+    console.log(`[EDITOR PAGE] Auth state - Loading: ${loading}, User: ${user?.displayName || 'null'}`);
+    
+    if (loading) {
+      // While loading, we don't know the auth state, so we wait.
+      return;
+    }
+    if (user) {
+       // If loading is finished and we have a user, we can run side effects.
+       debouncedRateResume(resumeData);
+    } else {
+      // If loading is finished and we still have no user, redirect to login.
+      console.log('[EDITOR PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, resumeData, debouncedRateResume]);
   
-  useEffect(() => {
-    if (user) { // Only rate if user is logged in
-      debouncedRateResume(resumeData);
-    }
-  }, [resumeData, user, debouncedRateResume]);
-
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -122,11 +128,25 @@ export default function EditorPage() {
   }
   
   if (error) {
-    return <div><p>Error: {error.message}</p></div>;
+     return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center text-destructive-foreground">
+          <p>Error: {error.message}</p>
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   if (!user) {
-    return null; // Or a loading spinner, router should redirect
+    // This state is handled by the useEffect redirect, so we can return a loader
+    // to avoid a flash of the component while redirecting.
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (

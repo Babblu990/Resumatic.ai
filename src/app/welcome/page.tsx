@@ -15,13 +15,21 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    // Log the state on every render
+    console.log(`[WELCOME PAGE] Auth state - Loading: ${loading}, User: ${user?.displayName || 'null'}`);
+
+    if (loading) {
+      // While loading, we don't know the auth state, so we wait and show a loader.
+      return;
+    }
+    if (!user) {
+      // If loading is finished and we still have no user, redirect to login.
+      console.log('[WELCOME PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
   }, [user, loading, router]);
 
   const handleSelection = (role: 'student' | 'employee') => {
-    // For now, we just redirect. In the future, this could be saved to a user profile.
     console.log(`User selected role: ${role}`);
     if (role === 'student') {
         router.push('/editor');
@@ -41,11 +49,25 @@ export default function WelcomePage() {
   }
 
   if (error) {
-    return <div><p>Error: {error.message}</p></div>;
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center text-destructive-foreground">
+          <p>Error: {error.message}</p>
+        </div>
+      </InteractiveBackground>
+    );
   }
   
   if (!user) {
-    return null; // Should be redirected
+    // This state is handled by the useEffect redirect, so we can return a loader 
+    // to avoid a flash of the component while redirecting.
+     return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-foreground" />
+        </div>
+      </InteractiveBackground>
+    );
   }
 
   return (
@@ -53,7 +75,7 @@ export default function WelcomePage() {
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline text-center">Welcome to Resumatic.ai!</CardTitle>
+            <CardTitle className="text-2xl font-headline text-center">Welcome, {user.displayName || user.email}!</CardTitle>
             <CardDescription className="text-center">To help us tailor your experience, please select your current status.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
