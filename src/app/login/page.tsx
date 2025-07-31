@@ -111,7 +111,7 @@ function LoginPageContent() {
       });
   // The empty dependency array is correct here. We only want this to run ONCE on mount.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [handleAuthError]);
 
 
   useEffect(() => {
