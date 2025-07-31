@@ -94,14 +94,18 @@ export default function EditorPage() {
 
 
   useEffect(() => {
+    // Log the state on every render
+    console.log(`[EDITOR PAGE] Auth state - Loading: ${loading}, User: ${user?.displayName || 'null'}`);
+    
     if (loading) {
-      console.log('[EDITOR PAGE] Auth state loading...');
+      // While loading, we don't know the auth state, so we wait.
       return;
     }
     if (user) {
-       console.log(`[EDITOR PAGE] User authenticated: ${user.displayName || user.email}`);
+       // If loading is finished and we have a user, we can run side effects.
        debouncedRateResume(resumeData);
     } else {
+      // If loading is finished and we still have no user, redirect to login.
       console.log('[EDITOR PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }

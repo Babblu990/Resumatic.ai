@@ -15,23 +15,21 @@ export default function WelcomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Log the state on every render
+    console.log(`[WELCOME PAGE] Auth state - Loading: ${loading}, User: ${user?.displayName || 'null'}`);
+
     if (loading) {
-      // While loading, we don't know the auth state, so we wait.
-      console.log('[WELCOME PAGE] Auth state loading...');
+      // While loading, we don't know the auth state, so we wait and show a loader.
       return;
     }
-    if (user) {
-      // If loading is finished and we have a user, we can show the page.
-      console.log(`[WELCOME PAGE] User authenticated: ${user.displayName || user.email}`);
-    } else {
-      // If loading is finished and we have no user, redirect to login.
+    if (!user) {
+      // If loading is finished and we still have no user, redirect to login.
       console.log('[WELCOME PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }
   }, [user, loading, router]);
 
   const handleSelection = (role: 'student' | 'employee') => {
-    // For now, we just redirect. In the future, this could be saved to a user profile.
     console.log(`User selected role: ${role}`);
     if (role === 'student') {
         router.push('/editor');

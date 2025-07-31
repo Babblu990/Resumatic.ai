@@ -83,20 +83,24 @@ function LoginPageContent() {
 
   // This effect redirects the user if they are logged in
   useEffect(() => {
+     console.log(`[AUTH STATE] User: ${user?.displayName || 'null'} Loading: ${userLoading}`);
     if (!userLoading && user) {
-        console.log("User logged in, redirecting:",user);
+        console.log("[REDIRECT EFFECT] User logged in, redirecting to /welcome");
         router.push('/welcome');
     }
   }, [user, userLoading, router]);
 
   // This effect runs once on mount to handle the redirect result from Google
   useEffect(() => {
+    console.log("[REDIRECT RESULT EFFECT] Checking for redirect result.");
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          console.log("Redirect result processed successfully:", result.user.displayName);
+          console.log("[REDIRECT RESULT EFFECT] Redirect result processed successfully:", result.user.displayName);
           toast({ title: "Success", description: "Logged in successfully!" });
           // The effect above will handle the redirect to /welcome
+        } else {
+             console.log("[REDIRECT RESULT EFFECT] No redirect result found.");
         }
       })
       .catch((error) => {
@@ -244,8 +248,17 @@ function LoginPageContent() {
     );
   }
 
-  // If we have a user, the redirect effect will handle navigation. Return null or a loader.
-  return null;
+  // If we have a user, the redirect effect will handle navigation. Return a loader.
+  return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-primary-foreground">
+             <Loader2 className="h-12 w-12 animate-spin" />
+             <p>Redirecting...</p>
+          </div>
+        </div>
+      </InteractiveBackground>
+  );
 }
 
 
