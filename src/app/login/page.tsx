@@ -11,9 +11,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  signInWithRedirect,
-  getRedirectResult,
+  GoogleAuthProvider,
+  signInWithPopup,
   updateProfile
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -72,7 +71,7 @@ function LoginPageContent() {
             errorMessage = 'Password should be at least 6 characters.';
             break;
         case 'auth/popup-closed-by-user':
-             errorMessage = 'Sign-in process was cancelled. If you are having trouble, please ensure pop-ups are enabled and that your current domain is listed as an authorized domain in your Firebase project settings.';
+             errorMessage = 'Sign-in process was cancelled. Please try again.';
              break;
         case 'auth/argument-error':
             errorMessage = 'There was a configuration error. Please ensure this domain is added to the "Authorized Domains" list in your Firebase Authentication settings.';
@@ -83,28 +82,6 @@ function LoginPageContent() {
     }
     toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
   }, [toast]);
-
-  // This effect handles the redirect from Google OAuth
-  useEffect(() => {
-    console.log('[REDIRECT RESULT EFFECT] Checking for redirect result.');
-    setIsGoogleLoading(true);
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          console.log('[REDIRECT RESULT EFFECT] Successfully received redirect result for user:', result.user.displayName);
-          toast({ title: 'Success', description: 'Logged in successfully!' });
-          // The main useAuthState hook will handle the redirect to /welcome
-        } else {
-          console.log('[REDIRECT RESULT EFFECT] No redirect result found.');
-        }
-      })
-      .catch((error) => {
-        handleAuthError(error);
-      })
-      .finally(() => {
-        setIsGoogleLoading(false);
-      });
-  }, [handleAuthError, toast]);
   
   // This effect redirects the user if they are already logged in
   useEffect(() => {
@@ -128,10 +105,13 @@ function LoginPageContent() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      await signInWithPopup(auth, provider);
+      // Successful sign-in will be handled by the useAuthState hook and redirect effect.
+      toast({ title: 'Success', description: 'Logged in successfully!' });
     } catch (error: any) {
-        console.error('[GOOGLE SIGN-IN] Error starting redirect sign in:', error);
+        console.error('[GOOGLE SIGN-IN] Error with popup sign in:', error);
         handleAuthError(error)
+    } finally {
         setIsGoogleLoading(false);
     }
   };
@@ -164,7 +144,7 @@ function LoginPageContent() {
   }
 
   // This state is rendered while waiting for Firebase to check the user's auth status
-  if (userLoading || isGoogleLoading) {
+  if (userLoading) {
      return (
       <InteractiveBackground>
         <div className="flex h-screen w-full items-center justify-center">
@@ -269,3 +249,5 @@ export default function LoginPage() {
     </Suspense>
   )
 }
+
+    
