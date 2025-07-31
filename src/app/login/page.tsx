@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
@@ -43,7 +43,7 @@ function LoginPageContent() {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(true);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -90,30 +90,6 @@ function LoginPageContent() {
     }
   }, [user, userLoading, router]);
 
-  // This effect runs once on mount to handle the redirect result from Google
-  useEffect(() => {
-    console.log("[REDIRECT RESULT EFFECT] Checking for redirect result.");
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          console.log("[REDIRECT RESULT EFFECT] Redirect result processed successfully:", result.user.displayName);
-          toast({ title: "Success", description: "Logged in successfully!" });
-          // The effect above will handle the redirect to /welcome
-        } else {
-             console.log("[REDIRECT RESULT EFFECT] No redirect result found.");
-        }
-      })
-      .catch((error) => {
-        handleAuthError(error);
-      })
-      .finally(() => {
-          setIsGoogleLoading(false);
-      });
-  // The empty dependency array is correct here. We only want this to run ONCE on mount.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleAuthError]);
-
-
   useEffect(() => {
     const modeParam = searchParams.get('mode');
     if (modeParam === 'signup') {
@@ -127,12 +103,14 @@ function LoginPageContent() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
-      // After this, the browser will redirect to Google's sign-in page,
-      // and then back to this page. The getRedirectResult effect will handle the result.
+      await signInWithPopup(auth, provider);
+      // The useAuthState hook will detect the new user and the useEffect above
+      // will handle the redirect to /welcome.
+      toast({ title: "Success", description: "Logged in successfully!" });
     } catch (error: any) {
-        console.error('[GOOGLE SIGN-IN] Error starting redirect sign in:', error);
+        console.error('[GOOGLE SIGN-IN] Error with popup sign in:', error);
         handleAuthError(error)
+    } finally {
         setIsGoogleLoading(false);
     }
   };
@@ -163,8 +141,7 @@ function LoginPageContent() {
   }
 
   // This state is rendered while waiting for Firebase to check the user's auth status
-  // or for the redirect result to be processed.
-  if (userLoading || isGoogleLoading) {
+  if (userLoading) {
      return (
       <InteractiveBackground>
         <div className="flex h-screen w-full items-center justify-center">
@@ -203,7 +180,7 @@ function LoginPageContent() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || isGoogleLoading}
                   />
                 </div>
                 <div className="grid gap-1.5">
@@ -215,10 +192,10 @@ function LoginPageContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={mode === 'signup' ? 'Must be at least 6 characters' : undefined}
-                    disabled={isLoading}
+                    disabled={isLoading || isGoogleLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
                   {isLoading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Log In' : 'Sign Up')}
                 </Button>
               </form>
@@ -231,8 +208,8 @@ function LoginPageContent() {
                   </div>
               </div>
 
-              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-                  <GoogleIcon /> Sign in with Google
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+                  {isGoogleLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon /> Sign in with Google</>}
               </Button>
 
               <div className="mt-4 text-center text-sm">
