@@ -17,7 +17,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 
 function GoogleIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
       <path
         fill="currentColor"
         d="M21.35 11.1h-9.35v2.55h5.49c-.22 1.45-1.24 2.68-2.73 3.56v2.18h3.35c1.96-1.81 3.08-4.57 3.08-7.29s0-1.02-.14-2z"
