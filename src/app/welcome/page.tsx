@@ -41,12 +41,18 @@ export default function WelcomePage() {
   }
 
   if (error) {
-    return <div><p>Error: {error.message}</p></div>;
+    return (
+      <InteractiveBackground>
+        <div className="flex h-screen w-full items-center justify-center text-destructive-foreground">
+          <p>Error: {error.message}</p>
+        </div>
+      </InteractiveBackground>
+    );
   }
   
   if (!user) {
     // This state is handled by the useEffect redirect, so we can return null 
-    // to avoid a flash of the component.
+    // to avoid a flash of the component while redirecting.
     return null;
   }
 
