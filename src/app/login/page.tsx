@@ -65,14 +65,11 @@ function LoginPageContent() {
         case 'auth/weak-password':
             errorMessage = 'Password should be at least 6 characters.';
             break;
-        case 'auth/configuration-not-found':
-            errorMessage = 'Firebase Email/Password sign-in not enabled. Please enable it in the Firebase console.'
-            break;
         case 'auth/popup-closed-by-user':
-             errorMessage = 'Sign-in process was cancelled.';
+             errorMessage = 'Sign-in process was cancelled. If you are having trouble, please ensure pop-ups are enabled and that your current domain is listed as an authorized domain in your Firebase project settings.';
              break;
         case 'auth/argument-error':
-            errorMessage = 'There was a configuration error. Please try again later.';
+            errorMessage = 'There was a configuration error. Please ensure this domain is added to the "Authorized Domains" list in your Firebase Authentication settings.';
             break;
         default:
             errorMessage = error.message;
@@ -246,3 +243,5 @@ export default function LoginPage() {
     </Suspense>
   )
 }
+
+    
