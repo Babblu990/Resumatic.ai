@@ -16,12 +16,15 @@ export default function WelcomePage() {
 
   useEffect(() => {
     if (loading) {
+      // While loading, we don't know the auth state, so we wait.
       console.log('[WELCOME PAGE] Auth state loading...');
       return;
     }
     if (user) {
+      // If loading is finished and we have a user, we can show the page.
       console.log(`[WELCOME PAGE] User authenticated: ${user.displayName || user.email}`);
     } else {
+      // If loading is finished and we have no user, redirect to login.
       console.log('[WELCOME PAGE] No user found, redirecting to /login.');
       router.push('/login');
     }

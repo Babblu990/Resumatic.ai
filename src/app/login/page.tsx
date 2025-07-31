@@ -84,6 +84,7 @@ function LoginPageContent() {
   // This effect redirects the user if they are logged in
   useEffect(() => {
     if (!userLoading && user) {
+        console.log("User logged in, redirecting:",user);
         router.push('/welcome');
     }
   }, [user, userLoading, router]);
@@ -93,8 +94,9 @@ function LoginPageContent() {
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
+          console.log("Redirect result processed successfully:", result.user.displayName);
           toast({ title: "Success", description: "Logged in successfully!" });
-          // The effect above will handle the redirect
+          // The effect above will handle the redirect to /welcome
         }
       })
       .catch((error) => {
@@ -122,6 +124,8 @@ function LoginPageContent() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
+      // After this, the browser will redirect to Google's sign-in page,
+      // and then back to this page. The getRedirectResult effect will handle the result.
     } catch (error: any) {
         console.error('[GOOGLE SIGN-IN] Error starting redirect sign in:', error);
         handleAuthError(error)
@@ -154,6 +158,8 @@ function LoginPageContent() {
     router.replace(newPath, { scroll: false });
   }
 
+  // This state is rendered while waiting for Firebase to check the user's auth status
+  // or for the redirect result to be processed.
   if (userLoading || isGoogleLoading) {
      return (
       <InteractiveBackground>
@@ -167,76 +173,79 @@ function LoginPageContent() {
     );
   }
 
-  if (user) {
-    return null;
+  // This state is rendered after auth is loaded and we know there is no user.
+  // We don't render this if a user object exists, because the redirect effect will be running.
+  if (!user) {
+    return (
+      <InteractiveBackground>
+        <div className="flex min-h-screen flex-col items-center justify-center p-4">
+          <div className="absolute top-8 left-8 flex items-center gap-2">
+            <FileText className="h-8 w-8 text-primary-foreground" />
+            <h1 className="text-xl md:text-2xl font-bold text-primary-foreground font-headline">Resumatic.ai</h1>
+          </div>
+          <Card className="w-full max-w-sm shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl font-headline">{mode === 'login' ? 'Welcome Back' : 'Create an Account'}</CardTitle>
+              <CardDescription>{mode === 'login' ? 'Enter your credentials to access your account.' : 'Create an account to get started.'}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="grid gap-4">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={mode === 'signup' ? 'Must be at least 6 characters' : undefined}
+                    disabled={isLoading}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Log In' : 'Sign Up')}
+                </Button>
+              </form>
+               <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  </div>
+              </div>
+
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
+                  <GoogleIcon /> Sign in with Google
+              </Button>
+
+              <div className="mt-4 text-center text-sm">
+                {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
+                <Button variant="link" className="p-0 h-auto" onClick={() => handleModeChange(mode === 'login' ? 'signup' : 'login')}>
+                  {mode === 'login' ? 'Sign up' : 'Log in'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </InteractiveBackground>
+    );
   }
 
-  return (
-    <InteractiveBackground>
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="absolute top-8 left-8 flex items-center gap-2">
-          <FileText className="h-8 w-8 text-primary-foreground" />
-          <h1 className="text-xl md:text-2xl font-bold text-primary-foreground font-headline">Resumatic.ai</h1>
-        </div>
-        <Card className="w-full max-w-sm shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-headline">{mode === 'login' ? 'Welcome Back' : 'Create an Account'}</CardTitle>
-            <CardDescription>{mode === 'login' ? 'Enter your credentials to access your account.' : 'Create an account to get started.'}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="grid gap-4">
-              <div className="grid gap-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isGoogleLoading}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === 'signup' ? 'Must be at least 6 characters' : undefined}
-                  disabled={isGoogleLoading}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Log In' : 'Sign Up')}
-              </Button>
-            </form>
-             <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
-                {isGoogleLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon /> Sign in with Google</>}
-            </Button>
-
-            <div className="mt-4 text-center text-sm">
-              {mode === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
-              <Button variant="link" className="p-0 h-auto" onClick={() => handleModeChange(mode === 'login' ? 'signup' : 'login')}>
-                {mode === 'login' ? 'Sign up' : 'Log in'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </InteractiveBackground>
-  );
+  // If we have a user, the redirect effect will handle navigation. Return null or a loader.
+  return null;
 }
 
 
