@@ -7,9 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signInWithRedirect,
+  getRedirectResult,
+  updateProfile
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { InteractiveBackground } from '@/components/interactive-background';
@@ -78,9 +84,31 @@ function LoginPageContent() {
     toast({ title: 'Authentication Failed', description: errorMessage, variant: 'destructive' });
   }, [toast]);
 
-  // This effect redirects the user if they are logged in
+  // This effect handles the redirect from Google OAuth
   useEffect(() => {
-     console.log(`[AUTH STATE] User: ${user?.displayName || 'null'} Loading: ${userLoading}`);
+    console.log('[REDIRECT RESULT EFFECT] Checking for redirect result.');
+    setIsGoogleLoading(true);
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('[REDIRECT RESULT EFFECT] Successfully received redirect result for user:', result.user.displayName);
+          toast({ title: 'Success', description: 'Logged in successfully!' });
+          // The main useAuthState hook will handle the redirect to /welcome
+        } else {
+          console.log('[REDIRECT RESULT EFFECT] No redirect result found.');
+        }
+      })
+      .catch((error) => {
+        handleAuthError(error);
+      })
+      .finally(() => {
+        setIsGoogleLoading(false);
+      });
+  }, [handleAuthError, toast]);
+  
+  // This effect redirects the user if they are already logged in
+  useEffect(() => {
+    console.log(`[AUTH STATE] User: ${user?.displayName || 'null'} Loading: ${userLoading}`);
     if (!userLoading && user) {
         console.log("[REDIRECT EFFECT] User logged in, redirecting to /welcome");
         router.push('/welcome');
@@ -100,14 +128,10 @@ function LoginPageContent() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // The useAuthState hook will detect the new user and the useEffect above
-      // will handle the redirect to /welcome.
-      toast({ title: "Success", description: "Logged in successfully!" });
+      await signInWithRedirect(auth, provider);
     } catch (error: any) {
-        console.error('[GOOGLE SIGN-IN] Error with popup sign in:', error);
+        console.error('[GOOGLE SIGN-IN] Error starting redirect sign in:', error);
         handleAuthError(error)
-    } finally {
         setIsGoogleLoading(false);
     }
   };
@@ -119,7 +143,9 @@ function LoginPageContent() {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const name = email.split('@')[0];
+        await updateProfile(userCredential.user, { displayName: name });
         toast({ title: "Success", description: "Account created! Please log in." });
         setMode('login');
         router.replace('/login');
@@ -138,7 +164,7 @@ function LoginPageContent() {
   }
 
   // This state is rendered while waiting for Firebase to check the user's auth status
-  if (userLoading) {
+  if (userLoading || isGoogleLoading) {
      return (
       <InteractiveBackground>
         <div className="flex h-screen w-full items-center justify-center">
@@ -243,5 +269,3 @@ export default function LoginPage() {
     </Suspense>
   )
 }
-
-    
